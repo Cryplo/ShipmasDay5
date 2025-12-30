@@ -63,7 +63,6 @@ interface GameState {
   time: number
   fadeOpacity: number
   started: boolean
-  audioContext: AudioContext | null
   dustParticles: DustParticle[]
 }
 
@@ -140,7 +139,6 @@ export default function Playground() {
       time: 0,
       fadeOpacity: 0,
       started: false,
-      audioContext: null,
       dustParticles: Array.from({ length: 30 }, () => ({
         x: Math.random() * w,
         y: Math.random() * (h * 0.6),
@@ -150,92 +148,6 @@ export default function Playground() {
         drift: Math.random() * Math.PI * 2,
       })),
     }
-  }, [])
-
-  // Ambient audio generation
-  const createAmbientAudio = useCallback((ctx: AudioContext) => {
-    // Wind sound - filtered white noise
-    const windGain = ctx.createGain()
-    windGain.gain.value = 0.03
-    windGain.connect(ctx.destination)
-
-    const windFilter = ctx.createBiquadFilter()
-    windFilter.type = 'lowpass'
-    windFilter.frequency.value = 400
-    windFilter.connect(windGain)
-
-    const bufferSize = 2 * ctx.sampleRate
-    const windBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate)
-    const windData = windBuffer.getChannelData(0)
-    for (let i = 0; i < bufferSize; i++) {
-      windData[i] = (Math.random() * 2 - 1) * 0.5
-    }
-
-    const windSource = ctx.createBufferSource()
-    windSource.buffer = windBuffer
-    windSource.loop = true
-    windSource.connect(windFilter)
-    windSource.start()
-
-    // Gentle modulation for wind
-    const modulate = () => {
-      const now = ctx.currentTime
-      windGain.gain.setValueAtTime(0.02 + Math.random() * 0.02, now)
-      windFilter.frequency.setValueAtTime(300 + Math.random() * 200, now)
-      setTimeout(modulate, 2000 + Math.random() * 3000)
-    }
-    modulate()
-
-    // Occasional bird chirp
-    const chirp = () => {
-      const osc = ctx.createOscillator()
-      const chirpGain = ctx.createGain()
-
-      osc.type = 'sine'
-      osc.frequency.value = 2000 + Math.random() * 1000
-
-      chirpGain.gain.value = 0
-      chirpGain.gain.setValueAtTime(0, ctx.currentTime)
-      chirpGain.gain.linearRampToValueAtTime(0.02, ctx.currentTime + 0.05)
-      chirpGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.15)
-
-      osc.connect(chirpGain)
-      chirpGain.connect(ctx.destination)
-
-      osc.start(ctx.currentTime)
-      osc.stop(ctx.currentTime + 0.2)
-
-      setTimeout(chirp, 5000 + Math.random() * 10000)
-    }
-    setTimeout(chirp, 3000)
-
-    return windSource
-  }, [])
-
-  // Metal creak sound
-  const playCreak = useCallback((ctx: AudioContext, intensity: number) => {
-    const osc = ctx.createOscillator()
-    const gain = ctx.createGain()
-    const filter = ctx.createBiquadFilter()
-
-    osc.type = 'sawtooth'
-    osc.frequency.value = 80 + Math.random() * 40
-
-    filter.type = 'bandpass'
-    filter.frequency.value = 200
-    filter.Q.value = 10
-
-    gain.gain.value = 0
-    gain.gain.setValueAtTime(0, ctx.currentTime)
-    gain.gain.linearRampToValueAtTime(0.01 * intensity, ctx.currentTime + 0.02)
-    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.1)
-
-    osc.connect(filter)
-    filter.connect(gain)
-    gain.connect(ctx.destination)
-
-    osc.start(ctx.currentTime)
-    osc.stop(ctx.currentTime + 0.15)
   }, [])
 
   // Draw functions
@@ -794,13 +706,6 @@ export default function Playground() {
         }
       }
 
-      // Play creak sound at swing extremes
-      if (state.audioContext && Math.abs(state.swing.angularVelocity) > 0.01) {
-        if (Math.abs(state.swing.angle) > 0.4 && Math.random() < 0.02) {
-          playCreak(state.audioContext, Math.abs(state.swing.angularVelocity) * 20)
-        }
-      }
-
       // Exit swing
       if (state.keys.has('Escape') ||
           (state.keys.has('Enter') &&
@@ -923,7 +828,7 @@ export default function Playground() {
     ctx.restore()
 
     animationRef.current = requestAnimationFrame(gameLoop)
-  }, [drawSky, drawGround, drawSwing, drawMerryGoRound, drawSlide, drawPlayer, playCreak, drawDustParticles])
+  }, [drawSky, drawGround, drawSwing, drawMerryGoRound, drawSlide, drawPlayer, drawDustParticles])
 
   // Handle keyboard input
   useEffect(() => {
@@ -963,17 +868,11 @@ export default function Playground() {
       })
     }, 30)
 
-    // Initialize audio
-    const audioContext = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
-
     gameStateRef.current = initGameState()
-    gameStateRef.current.audioContext = audioContext
     gameStateRef.current.started = true
 
-    createAmbientAudio(audioContext)
-
     animationRef.current = requestAnimationFrame(gameLoop)
-  }, [initGameState, createAmbientAudio, gameLoop])
+  }, [initGameState, gameLoop])
 
   // Handle resize
   useEffect(() => {
