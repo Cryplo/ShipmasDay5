@@ -64,6 +64,7 @@ interface GameState {
   fadeOpacity: number
   started: boolean
   dustParticles: DustParticle[]
+  lastInteractionTime: number
 }
 
 // Color palette - muted golden hour
@@ -147,6 +148,7 @@ export default function Playground() {
         opacity: 0.1 + Math.random() * 0.2,
         drift: Math.random() * Math.PI * 2,
       })),
+      lastInteractionTime: 0,
     }
   }, [])
 
@@ -664,30 +666,35 @@ export default function Playground() {
       state.player.x = Math.max(50, Math.min(width - 50, state.player.x))
 
       // Check for interaction zones (Enter key only, Space is for jump)
+      // Debounce: only allow interaction if 0.3 seconds have passed since last interaction
+      const canInteract = state.keys.has('Enter') && (state.time - state.lastInteractionTime) > 0.3
       const { swing, merryGoRound, slide } = state
 
       // Swing interaction
       if (Math.abs(state.player.x - swing.x) < 30 &&
           Math.abs(state.player.y - (swing.y + swing.height - 30)) < 30 &&
-          state.keys.has('Enter')) {
+          canInteract) {
         state.player.interaction = 'swing'
         state.swing.angularVelocity = 0.02
+        state.lastInteractionTime = state.time
       }
 
       // Merry-go-round interaction
       if (Math.abs(state.player.x - merryGoRound.x) < merryGoRound.radius + 20 &&
           Math.abs(state.player.y - merryGoRound.y) < 30 &&
-          state.keys.has('Enter')) {
+          canInteract) {
         state.player.interaction = 'merrygoround'
         state.merryGoRound.angularVelocity = 0.02
+        state.lastInteractionTime = state.time
       }
 
       // Slide interaction
       if (Math.abs(state.player.x - (slide.x - 10)) < 30 &&
           Math.abs(state.player.y - (slide.y + slide.ladderHeight + 40)) < 30 &&
-          state.keys.has('Enter')) {
+          canInteract) {
         state.player.interaction = 'slide'
         state.player.interactionProgress = 0
+        state.lastInteractionTime = state.time
       }
 
     }
@@ -706,15 +713,15 @@ export default function Playground() {
         }
       }
 
-      // Exit swing
-      if (state.keys.has('Escape') ||
-          (state.keys.has('Enter') &&
-           Math.abs(state.swing.angle) < 0.1 && Math.abs(state.swing.angularVelocity) < 0.01)) {
+      // Exit swing (Enter with debounce)
+      const canExitSwing = state.keys.has('Enter') && (state.time - state.lastInteractionTime) > 0.3
+      if (canExitSwing) {
         state.player.interaction = 'none'
         state.player.y = state.swing.y + state.swing.height - 30
         state.player.velocityX = 0
         state.player.velocityY = 0
         state.player.isGrounded = false
+        state.lastInteractionTime = state.time
       }
     }
 
@@ -741,15 +748,15 @@ export default function Playground() {
       // Increased vertical range and raised base position
       state.player.y = state.merryGoRound.y - 35 + Math.sin(state.merryGoRound.angle) * (state.merryGoRound.radius - 15) * 0.4
 
-      // Exit
-      if (state.keys.has('Escape') ||
-          (state.keys.has('Enter') &&
-           Math.abs(state.merryGoRound.angularVelocity) < 0.01)) {
+      // Exit merry-go-round (Enter with debounce)
+      const canExitMerry = state.keys.has('Enter') && (state.time - state.lastInteractionTime) > 0.3
+      if (canExitMerry) {
         state.player.interaction = 'none'
         state.player.x = state.merryGoRound.x + state.merryGoRound.radius + 30
         state.player.velocityX = 0
         state.player.velocityY = 0
         state.player.isGrounded = false
+        state.lastInteractionTime = state.time
       }
     } else {
       // Slow down merry-go-round when player not on it
@@ -817,7 +824,7 @@ export default function Playground() {
     ctx.font = '14px Georgia, serif'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    const controlsText = 'A/D - Move    W/Space - Jump    Enter - Interact    Esc - Exit'
+    const controlsText = 'A/D - Move    W/Space - Jump    Enter - Interact/Exit'
     const controlsY = height * 0.35 // Center vertically in the sky area (above ground at 0.7)
     // Shadow for better readability
     ctx.fillStyle = 'rgba(45, 38, 30, 0.5)'
