@@ -466,7 +466,7 @@ export default function Playground() {
 
     // Ladder rungs - offset should decrease as we go up (perspective)
     ctx.lineWidth = 3
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 6; i++) {
       const rungY = y + 40 + i * 30
       // Calculate x positions by interpolating along the poles
       const t = (rungY - (y + 20)) / (groundLevel - (y + 20))
