@@ -780,14 +780,13 @@ export default function Playground() {
 
     }
 
-    // Update swing physics
-    if (state.player.interaction === 'swing') {
-      // Pendulum physics
-      const gravity = 0.0008
-      state.swing.angularVelocity -= Math.sin(state.swing.angle) * gravity
-      state.swing.angularVelocity *= 0.998 // Damping
-      state.swing.angle += state.swing.angularVelocity
+    // Update swing physics (always runs, even when player is off)
+    const swingGravity = 0.0008
+    state.swing.angularVelocity -= Math.sin(state.swing.angle) * swingGravity
+    state.swing.angularVelocity *= 0.998 // Damping
+    state.swing.angle += state.swing.angularVelocity
 
+    if (state.player.interaction === 'swing') {
       // Player can pump the swing
       if (state.keys.has('ArrowUp') || state.keys.has('KeyW')) {
         if (Math.abs(state.swing.angle) < 0.3) {
