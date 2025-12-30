@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #2d261e;
+}
+
+/* Remove all browser chrome feel */
+:focus {
+  outline: none;
+}
+
+/* Prevent text selection during interaction */
+body {
+  user-select: none;
+  -webkit-user-select: none;
+}

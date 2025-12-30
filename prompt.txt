@@ -1,0 +1,60 @@
+You are a senior frontend engineer and interaction designer.
+Your task is to design and implement a small, intentional web experience using Next.js + TypeScript. This project is for Shipmas and must be simple, grounded, and emotionally resonant.
+Core concept
+Build a quiet playground simulator that helps users reconnect with a childhood place and feeling.
+This is not a game.
+There are no goals, no scores, no UI chrome, no instructions on screen.
+The experience should feel like briefly being alone at a playground in the late afternoon.
+Environment
+A single playground scene
+Time of day: late afternoon / golden hour
+Empty (no NPCs, no dialogue, no text)
+Soft natural lighting
+Subtle ambient audio (wind, distant birds, metal creaks)
+Player
+A simple character avatar (abstract is fine)
+Movement via keyboard (WASD or arrow keys)
+No HUD, no stats
+Interactions (keep scope tight)
+Implement 3–4 physical playground interactions max, such as:
+Swing: gentle back-and-forth motion with slight camera sway
+Seesaw: slow tilt with weight shift
+Merry-go-round: gradual spin with inertia
+Slide: short, smooth descent
+Interactions should feel physical and tactile, not arcade-like.
+Timing
+The experience should naturally conclude after ~60 seconds
+Use a subtle visual fade or lighting shift to signal closure
+No explicit “end” screen
+Technical constraints
+Framework: Next.js (App Router preferred)
+Language: TypeScript
+Rendering: Canvas or lightweight WebGL is acceptable; keep performance simple
+No backend
+No user accounts
+No analytics
+No external UI libraries unless absolutely necessary
+VERY IMPORTANT STYLE CONSTRAINTS
+This project CANNOT be vibe-coded.
+Do NOT:
+Use neon gradients, glow effects, or futuristic styling
+Use playful emojis, novelty fonts, or exaggerated animations
+Over-style UI elements (there should be almost no UI)
+Add unnecessary polish layers or visual noise
+The aesthetic should be:
+Muted
+Soft
+Real-world inspired
+Calm and restrained
+Think quiet nostalgia, not “cool demo.”
+Deliverables
+Inside the project directory, produce:
+A working Next.js app
+Clean, readable code with clear separation of concerns
+A minimal README.md explaining:
+The concept
+How to run locally
+The intent behind the experience
+Intent
+The goal is to help someone reconnect with themselves through a familiar place and motion — not to impress with complexity.
+Keep it small. Keep it human.
